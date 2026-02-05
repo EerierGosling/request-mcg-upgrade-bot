@@ -1,0 +1,13 @@
+{
+  "name": "request-mcg-upgrade-bot",
+  "version": "1.0.0",
+  "description": "Slack bot for requesting MCG upgrades",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.17.0",
+    "dotenv": "^17.2.3"
+  }
+}
