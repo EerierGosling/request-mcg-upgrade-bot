@@ -70,7 +70,7 @@ app.view("mcg_upgrade_request", async ({ ack, body, view, client }) => {
 
   await client.chat.postMessage({
     channel: APPROVAL_CHANNEL,
-    text: `MCG Upgrade Request for <@${targetUserId}>`,
+    text: `upgrade request for <@${targetUserId}>`,
     blocks: [
       {
         type: "section",
@@ -112,6 +112,23 @@ app.action("approve_upgrade", async ({ ack, body, client, action }) => {
   try {
     await performUpgrade(data.target_user);
   } catch (error) {
+    if (error.message === "user is already a full member") {
+      await client.chat.update({
+        channel: body.channel.id,
+        ts: body.message.ts,
+        text: `upgrade request for <@${data.target_user}> - failed`,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*upgrade request* ❌ *failed*\n\n*requested by:* <@${data.requester}>\n*user:* <@${data.target_user}>\n*reason:* ${reason}\n*approved by:* <@${approverId}>\n\n_user is already a full member of slack_`,
+            },
+          },
+        ],
+      });
+      return;
+    }
     await client.chat.postMessage({
       channel: body.channel.id,
       text: `failed to upgrade <@${data.target_user}>: ${error.message}`,
@@ -168,6 +185,11 @@ app.action("deny_upgrade", async ({ ack, body, client, action }) => {
 });
 
 async function performUpgrade(userId) {
+
+  const userInfo = await client.users.info({ user: userId });
+  if (!userInfo.user.is_restricted && !userInfo.user.is_ultra_restricted) {
+    throw new Error("user is already a full member");
+  }
   const formData = new FormData();
   formData.append("token", process.env.SLACK_XOXC_TOKEN);
   formData.append("user", userId);
