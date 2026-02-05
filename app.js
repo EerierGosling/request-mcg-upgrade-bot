@@ -10,7 +10,7 @@ const app = new App({
 
 const APPROVAL_CHANNEL = process.env.APPROVAL_CHANNEL_ID;
 
-app.command("/request-mcg-upgrade-sofia", async ({ ack, body, client }) => {
+app.command("/request-mcg-upgrade", async ({ ack, body, client }) => {
   await ack();
 
   await client.views.open({
